@@ -1,0 +1,27 @@
+
+digraph g {
+  node[color="black",style="filled",fontname="Inconsolata",fontcolor="white",fontsize=11];
+  edge[fontname="Inconsolata",fontsize=9];
+  rankdir=LR;
+
+  env;
+  osc1;
+  osc2;
+  pluck1;
+  pluck2;
+  sum;
+  filter;
+  delay;
+  pan;
+  out;
+  
+  osc1 -> sum;
+  osc2 -> sum;
+  env -> sum;
+
+  sum -> filter;
+  filter -> delay;
+  delay -> pan -> out;
+  
+  
+}

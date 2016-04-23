@@ -1,0 +1,143 @@
+#+TITLE: thi.ng/ws-ldn-7
+
+[[./assets/ws-ldn-4-synth.jpg]]
+
+* Contents                                                         :toc_3_gh:
+ - [[#diy-synth--gui-workshop-with-stm32f7-arm-cortex-m7][DIY Synth & GUI workshop with STM32F7 (ARM Cortex-M7)]]
+     - [[#video-documentation][Video documentation]]
+     - [[#examples--exercises][Examples / exercises]]
+         - [[#ex01---hello-blinky][ex01 - Hello Blinky]]
+         - [[#ex02---timers--interrupts][ex02 - Timers & interrupts]]
+         - [[#ex03---lcd-multitouch--gui][ex03 - LCD, multitouch & GUI]]
+         - [[#ex04---synth-dsp--gui][ex04 - Synth, DSP & GUI]]
+         - [[#ex05---midi-step-sequencer][ex05 - MIDI step sequencer]]
+     - [[#building-the-exercises][Building the exercises]]
+     - [[#other-tools][Other tools]]
+     - [[#license][License]]
+
+* DIY Synth & GUI workshop with STM32F7 (ARM Cortex-M7)
+
+** Video documentation
+
+- [[https://www.youtube.com/watch?v=41FKE3PYjnE][MIDI step sequencer]] (ex05)
+- [[https://www.youtube.com/watch?v=3lL-ZxyrHiE][Synth GUI documentation]] (ex04)
+
+** Examples / exercises
+*** ex01 - Hello Blinky
+
+Simple LED blink example and GPIO (push button) handling, polling vs.
+EXTI interrupt
+
+*** ex02 - Timers & interrupts
+
+Introduction to timers, configuration and custom interrupt handlers.
+Useful for basic multi-tasking.
+
+*** ex03 - LCD, multitouch & GUI
+
+Introduction to LCD driver, HAL BSP drawing functionality, state
+machines, GUI components & multi-touch handling. Press blue user
+button to switch between modules.
+
+*** ex04 - Synth, DSP & GUI
+
+Complete synth, GUI controls & timer integration. See video above.
+
+**** Oscillator types
+
+Oscillator types are set via the following 3-bit patterns:
+
+| *Spiral* | *Sin* | *Square* | *Saw* | *Sawsin* | *Tri* | *String* |
+|----------+-------+----------+-------+----------+-------+----------|
+| [ ]      | [x]   | [ ]      | [x]   | [ ]      | [x]   | [ ]      |
+| [ ]      | [ ]   | [x]      | [x]   | [ ]      | [ ]   | [x]      |
+| [ ]      | [ ]   | [ ]      | [ ]   | [x]      | [x]   | [x]      |
+
+**** Filter types
+
+Filter types are set via the following 2-bit patterns:
+
+| *LPF* | *HPF* | *BPF* | *PEQ* |
+|-------+-------+-------+-------|
+| [ ]   | [x]   | [ ]   | [x]   |
+| [ ]   | [ ]   | [x]   | [x]   |
+
+This demo only makes use of biquad filters, though other filter types
+are possible (IIR, Formant, 4pole...)
+
+*** ex05 - MIDI step sequencer
+
+MIDI example ported from [[http://thi.ng/ws-ldn-3][previous workshop]] (then using STM32F401),
+implementing a 2-track, 8-step MIDI sequencer using buttons of the
+Korg Nanokontrol2. The MIDI configuration (in =ex05/main.h=) is still
+set for the Nanokontrol and I've also uploaded a configuration file
+(nanokontrol2.nktrl2_data) which you can use with the Korg Kontrol
+Editor app (can be downloaded from here:
+http://www.korg.com/uk/products/controllers/nanokontrol2/ - further
+down on that page).
+
+The Nanokontrol is configured as follows:
+
+- the first row of buttons ("S") is used as 8 step sequencer for track 1
+- the second row of buttons ("M") => track 2
+- 2 leftmost sliders control filter cutoff freq for sequencer tracks 1 & 2
+- 2 leftmost dials controls resonance for each filter
+- 3rd dial => delay feedback
+- 4th & 5th dial => attack time for track 1 & 2
+- Marker left/right => change waveform for oscillator 1 (all tracks)
+- Track left/right => transpose current sequence by -12, -5, 0, +7 or
++12 semi-tones
+- Rewind, Stop & Play do as expected (when the app starts, it is in
+Pause mode - you'll need to press Play and activate at least one "S"
+or "M" button)
+
+The notes played in each sequencer track are randomly chosen from a
+musical scale defined in the source code. If you don't like a note,
+simply de-activate and then press the "S" or "M" button again to get
+another semi-random note. See the live video recording (link above)
+for reference...
+
+If you have a different MIDI controller, you'll have to edit the MIDI
+control message IDs in the =ex05/main.h= file for this example. Note,
+that your controller *MUST* be able to emit MIDI CC messages. With a
+bit more work this can of course also be extended to proper MIDI Note
+On/Off messages...
+
+** Building the exercises
+
+This repo contains a complete Eclipse CDT project and can be built
+with [[http://gnuarmeclipse.github.io][GNU ARM Eclipse]] plugin. Furthermore, the [[https://launchpad.net/gcc-arm-embedded][ARM GCC toolchain]] is
+required outside Eclipse.
+
+Within the project, you can find several build configurations, one per
+example/exercise. Build profiles can be switched by clicking on the
+little triangle next to the hammer (build) icon in the main toolbar.
+Once a profile has been built, you'll find the resulting =.bin= file
+in the profile's subfolder of this project. E.g. =ex04='s binary will
+be located in ={$PROJECT_DIR}/ex04/ws-ldn-7.bin=.
+
+*Important:* The build profile called "base" is only a template and is
+NOT buildable. However it is the default profile after importing the
+project into Eclipse. So if it starts building the project
+automatically and you get lots of errors, let it finish and then
+select one of the example profiles ("ex01"...) as described above.
+
+The STM32F746-DISCO board is mbed enabled and
+therefore can be programmed/flashed via simple drag & drop. Simply
+move a =.bin= file onto the USB volume the board shows up as in OSX
+Finder or Windows Explorer. Under Linux, please use the [[https://github.com/texane/stlink][st-flash]] tool
+and invoke like this:
+
+#+BEGIN_SRC bash
+cd ws-ldn-7
+st-flash --reset write ex04/ws-ldn-7.bin 0x8000000
+#+END_SRC
+
+** Other tools
+
+- [[http://www.g200kg.com/en/software/knobman.html][jKnobMan]]
+- [[https://github.com/thi-ng/img2array][Image to C array conversion]]
+
+** License
+
+This project is open source and licensed under the [[http://www.apache.org/licenses/LICENSE-2.0][Apache Software License 2.0]].

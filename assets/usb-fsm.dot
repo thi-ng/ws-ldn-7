@@ -1,0 +1,19 @@
+digraph g {
+  node[color="black",style="filled",fontname="Inconsolata",fontcolor="white",fontsize=11];
+  edge[fontname="Inconsolata",fontsize=9];
+  rankdir=LR;
+
+
+  APP_IDLE;
+  APP_READY;
+  APP_RUNNING;
+
+  APP_IDLE -> APP_READY [label="event: HOST_USER_CLASS_ACTIVE"];
+  APP_READY -> APP_RUNNING [label="event: self"];
+  APP_RUNNING -> APP_DISCONNECT [label="event: HOST_USER_DISCONNECTION"];
+  APP_RUNNING -> APP_RUNNING;
+  
+  APP_DISCONNECT -> APP_IDLE [label="event: self"];
+  
+  
+}
