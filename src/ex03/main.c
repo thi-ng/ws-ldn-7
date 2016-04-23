@@ -23,7 +23,7 @@ uint32_t demoID = 0;
 static TS_StateTypeDef rawTouchState;
 static GUITouchState touchState;
 
-__IO uint32_t isPressed = 0;
+volatile uint32_t isPressed = 0;
 
 //static SpriteSheet dialSheet = { .pixels = bt_blackangle48_12_argb8888,
 //		.spriteWidth = 48, .spriteHeight = 48, .numSprites = 12, .format = CM_ARGB8888 };
@@ -69,6 +69,7 @@ int main() {
 	} else {
 		touchScreenError();
 	}
+
 	return 0;
 }
 
@@ -84,11 +85,11 @@ static void demoWelcome() {
 			(uint8_t *) "Welcome!", CENTER_MODE);
 }
 
-static float demoFunction(float theta) {
+static float demoFunction__(float theta) {
 	return sinf(theta);
 }
 
-static float demoFunction__(float theta) {
+static float demoFunction(float theta) {
 	float y = sinf(theta);
 	y += 0.5f * sinf(2.0f * theta);
 	y += 0.3333f * sinf(3.0f * theta);
@@ -104,8 +105,15 @@ static void demoGraph() {
 	uint16_t h = BSP_LCD_GetYSize() / 2;
 	for (uint16_t x = 0; x < w; x++) {
 		float theta = (float) x / w * 4.0f * M_PI;
-		float y = demoFunction(theta);
-		BSP_LCD_DrawPixel(x, (uint16_t) (h + h * y), LCD_COLOR_CYAN);
+		float y = CLAMP(demoFunction(theta), -1.0f, 1.0);
+		//BSP_LCD_DrawPixel(x, (uint16_t) (h + h * y), 0x7f00ffff);
+		uint32_t col = 0xffff | (uint32_t)((fabs(y) * 0.9f + 0.1f) * 255) << 24;
+		BSP_LCD_SetTextColor(col);
+		if (y >= 0.0f) {
+			BSP_LCD_DrawVLine(x, h, (uint16_t)h * y);
+		} else {
+			BSP_LCD_DrawVLine(x, (uint16_t) (h + h * y), (uint16_t)h * fabs(y));
+		}
 	}
 }
 

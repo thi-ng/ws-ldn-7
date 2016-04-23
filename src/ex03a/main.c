@@ -152,7 +152,14 @@ static void drawGUI() {
 	int16_t *ptr = (int16_t*) &audioBuf[0];
 	for (uint16_t x = 0; x < w; x++) {
 		float y = (float) (ptr[x]) / (32767.0 * 1.1f);
-		BSP_LCD_DrawPixel(x, (uint16_t) (h + h * y), LCD_COLOR_CYAN);
+		//BSP_LCD_DrawPixel(x, (uint16_t) (h + h * y), LCD_COLOR_CYAN);
+		uint32_t col = 0x7f00ff | (uint32_t)((fabs(y) * 0.9f + 0.1f) * 255) << 24;
+		BSP_LCD_SetTextColor(col);
+		if (y >= 0.0f) {
+			BSP_LCD_DrawVLine(x, h, (uint16_t) h * y);
+		} else {
+			BSP_LCD_DrawVLine(x, (uint16_t) (h + h * y), (uint16_t) h * fabs(y));
+		}
 	}
 	BSP_TS_GetState(&rawTouchState);
 	guiUpdateTouch(&rawTouchState, &touchState);
