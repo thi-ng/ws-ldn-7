@@ -2,6 +2,8 @@
 #include "ex03a/main.h"
 #include "gui/bt_blackangle64_16.h"
 #include "macros.h"
+#include "tinymt32.h"
+#include "perlin.h"
 
 static void touchScreenError();
 static void initAppGUI();
@@ -59,6 +61,8 @@ static uint8_t audioBuf[AUDIO_DMA_BUFFER_SIZE];
 static Oscillator osc = { .phase = 0.0f, .freq = HZ_TO_RAD(22050.0f),
 		.modPhase = 0.0f, .modAmp = 4.0f, .type = 0 };
 
+static tinymt32_t rng;
+
 int main() {
 	CPU_CACHE_Enable();
 	HAL_Init();
@@ -77,6 +81,7 @@ int main() {
 		BSP_AUDIO_OUT_Play((uint16_t *) audioBuf, AUDIO_DMA_BUFFER_SIZE);
 
 		initAppGUI();
+		tinymt32_init(&rng, 0xdecafbad);
 
 		while (1) {
 			drawGUI();
@@ -189,7 +194,7 @@ static void renderAudio(int16_t *ptr) {
 		if (osc.phase >= TAU) {
 			osc.phase -= TAU;
 		}
-		osc.modPhase += HZ_TO_RAD(1.0f);
+		osc.modPhase += HZ_TO_RAD(10.0f);
 		if (osc.modPhase >= TAU) {
 			osc.modPhase -= TAU;
 		}
@@ -213,12 +218,15 @@ static void renderAudio(int16_t *ptr) {
 			}
 			break;
 		case 4: // tri + sin
-		default:
 			if (osc.phase + m < PI) {
 				y = mapValue(osc.phase + m, 0.0f, PI, -1.f, 1.f);
 			} else {
 				y = sinf(osc.phase + m);
 			}
+			break;
+		default: // noise
+			//y = tinymt32_generate_float(&rng) * 2.0f - 1.0f;
+			y = perlin3d(osc.phase + m, 1.0f, 2.0f);
 		}
 		int16_t yi = ct_clamp16((int32_t) (y * 32767));
 		*ptr++ = yi;
